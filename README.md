@@ -1,87 +1,120 @@
-Workshop: Fetching Videos from an API (In Progress)
-What are we building?
+# Workshop: Fetching Videos from an API (In Progress)
 
-In this step, we are creating a server-side function that fetches videos from the Pexels API.
+## What are we building?
 
-Right now, this version is a first implementation, meaning:
+In this step, we are creating a **server-side function** that fetches videos from the **Pexels API**.
 
-the API call is working
-the data is being fetched and mapped
-but the function is not fully dynamic yet
-File Setup
+Right now, this version is a **first implementation**, meaning:
+- the API call is working  
+- the data is being fetched and mapped  
+- but the function is not fully dynamic yet  
+
+---
+
+## File Setup
 
 We are working in:
 
-getvideo.tsx
+getvideo.tsx  
 
 This file is responsible for:
+- connecting to the Pexels API  
+- retrieving video data  
+- returning a simplified version of that data  
 
-connecting to the Pexels API
-retrieving video data
-returning a simplified version of that data
-Step 1: Enable Server-Side Execution
+---
+
+## Step 1: Enable Server-Side Execution
+
+We start by adding:
+
+```ts
 "use server";
+```
 
-This tells Next.js that this function runs on the backend, not the frontend.
+This tells Next.js that this function runs on the **backend**, not the frontend.
 
 Why this matters:
+- protects your API key  
+- keeps sensitive logic off the client  
 
-protects your API key
-keeps sensitive logic off the client
-Step 2: Import Types and API Key
+---
+
+## Step 2: Import Types and API Key
+
+```ts
 import { VideoResponse } from "@/types/backend/types";
 
 const API_KEY = process.env.API_KEY;
+```
 
 What’s happening:
 
-VideoResponse → type for API data (not fully used yet)
-API_KEY → pulled from environment variables
-Step 3: Create the Fetch Function
+- VideoResponse → type for API data (not fully used yet)  
+- API_KEY → pulled from environment variables  
+
+---
+
+## Step 3: Create the Fetch Function
+
+```ts
 const GetVideos = async (
   type: string,
   query: string | null,
   pages: number,
   per_page: number = 5
 ) => {
+```
 
 Parameters:
 
-type → intended for future use (not used yet)
-query → search term (not used yet)
-pages → page number (not used yet)
-per_page → number of results (default = 5, not used yet)
+- type → intended for future use (not used yet)  
+- query → search term (not used yet)  
+- pages → page number (not used yet)  
+- per_page → number of results (default = 5, not used yet)  
 
-⚠️ Note: These parameters are defined but not yet implemented in the API call.
+Note: These parameters are defined but not yet implemented in the API call.
 
-Step 4: Validate API Key
+---
+
+## Step 4: Validate API Key
+
+```ts
 if (!API_KEY || API_KEY == "") {
   throw new Error("missing API key");
 }
+```
 
 This ensures the function does not run without a valid API key.
 
-Step 5: Fetch Data from the API
+---
+
+## Step 5: Fetch Data from the API
+
+```ts
 const res = await (
   await fetch(
     "https://api.pexels.com/v1/videos/search?query=nature&page=1&per_page=1",
-    {
-      headers: { Authorization: API_KEY },
-    }
+    { headers: { Authorization: API_KEY } }
   )
 ).json();
+```
 
 What’s happening:
 
-Sends a request to the Pexels API
-Uses a hardcoded query ("nature")
-Always fetches:
-page = 1
-per_page = 1
+- Sends a request to the Pexels API  
+- Uses a hardcoded query ("nature")  
+- Always fetches:
+  - page = 1  
+  - per_page = 1  
 
-⚠️ This is a temporary setup — later we will replace this with dynamic values.
+This is a temporary setup — later we will replace this with dynamic values.
 
-Step 6: Map the Response Data
+---
+
+## Step 6: Map the Response Data
+
+```ts
 const videos = res.videos.map((video) => {
   return {
     id: video.id,
@@ -97,23 +130,106 @@ const videos = res.videos.map((video) => {
     },
   };
 });
+```
 
 What we’re doing:
 
-looping through res.videos
-creating a simplified object for each video
-extracting key fields:
-id
-dimensions
-video URL
-duration
-user info
+- looping through res.videos  
+- creating a simplified object for each video  
+- extracting key fields:
+  - id  
+  - dimensions  
+  - video URL  
+  - duration  
+  - user info  
 
-⚠️ Note:
+Note:
+- width is incorrectly set to video.id (should be video.width)  
+- video_files[0] is used without checking if it exists  
 
-width is incorrectly set to video.id (should be video.width)
-video_files[0] is used without checking if it exists
-Step 7: Return the Data
+---
+
+## Step 7: Return the Data
+
+```ts
 return videos;
+```
 
 We return only the array of videos, not the full API response.
+
+---
+
+## Current Code
+
+```ts
+"use server"; 
+
+import { VideoResponse } from "@/types/backend/types";
+
+const API_KEY = process.env.API_KEY;
+
+const GetVideos = async (
+  type: string,
+  query: string | null,
+  pages: number,
+  per_page: number = 5
+) => {
+  if (!API_KEY || API_KEY == "") {
+    throw new Error("missing API key");
+  }
+
+  const res = await (
+    await fetch(
+      "https://api.pexels.com/v1/videos/search?query=nature&page=1&per_page=1",
+      { headers: { Authorization: API_KEY } }
+    )
+  ).json();
+
+  const videos = res.videos.map((video) => {
+    return {
+      id: video.id,
+      width: video.id,
+      height: video.height,
+      url: video.video_files[0].link,
+      duration: video.duration ? video.duration : 0,
+      size: video.size,
+      user: {
+        id: video.user?.id,
+        name: video.user?.name,
+        url: video.user?.url,
+      },
+    };
+  });
+
+  return videos;
+};
+
+export default GetVideos;
+```
+
+---
+
+## Current Status
+
+- API connection is working  
+- Data is successfully fetched  
+- Response is mapped into a usable format  
+
+---
+
+## Next Steps
+
+- Use query, pages, and per_page dynamically  
+- Fix incorrect field mapping (width)  
+- Add error handling for missing video files  
+- Return structured response (pagination + videos)  
+- Improve TypeScript typing  
+
+---
+
+## Key Takeaways
+
+- Backend functions allow secure API calls  
+- APIs return large datasets that need to be simplified  
+- Mapping data is essential for frontend usability  
+- This is the foundation before making the function dynamic  
