@@ -158,5 +158,144 @@ return videos;
 We return only the array of videos, not the full API response.
 
 ---
+## What are we building?
 
+In this step, we are connecting our **backend video fetch function** to our **frontend video component**.
+
+This page:
+- fetches video data from the backend  
+- passes that data into the VideoFeed component  
+- renders the video on the screen  
+
+Think of this as the **bridge between your backend and UI**.
+
+---
+
+## File Setup
+
+We are working in:
+
+app/page.tsx  
+
+This file is responsible for:
+- fetching data on the server  
+- rendering the main UI  
+- passing props to components  
+
+---
+
+## Step 1: Enable Server-Side Execution
+
+```ts
+"use server";
+```
+
+This ensures that the code runs on the **server**, allowing us to:
+- safely call backend functions  
+- keep API calls secure  
+
+---
+
+## Step 2: Import Components and Functions
+
+```ts
+import VideoFeed from "@/component/Video";
+import GetVideos from "@/lib/getVideos";
+```
+
+What’s happening:
+
+- VideoFeed → frontend component that displays a video  
+- GetVideos → backend function that fetches video data  
+
+---
+
+## Step 3: Create the Page Component
+
+```ts
+export default async function Home() {
+```
+
+This is an **async server component**, meaning:
+- we can fetch data directly inside it  
+- no need for useEffect or client-side fetching  
+
+---
+
+## Step 4: Fetch Video Data
+
+```ts
+const data = await GetVideos("", "", 0, 0);
+```
+
+What’s happening:
+
+- calling our backend function to retrieve videos  
+- passing placeholder values for now  
+
+Note:
+- parameters are not being used yet  
+- this is just to confirm the data flow works  
+
+---
+
+## Step 5: Debug the Data
+
+```ts
+console.log(data[0].url);
+```
+
+This logs the first video URL to confirm:
+- data is being fetched correctly  
+- the structure is what we expect  
+
+---
+
+## Step 6: Render the UI
+
+```tsx
+return (
+  <main className="h-screen w-screen grid place-items-center">
+    <p className="text-lg">Workshop TODO: Implement app/page.tsx</p>
+    <VideoFeed url={data[0].url} />
+  </main>
+);
+```
+
+What’s happening:
+
+- creates a full-screen layout  
+- displays placeholder text  
+- passes the first video’s URL into VideoFeed  
+
+---
+
+## Current Code
+
+```tsx
+"use server";
+
+import VideoFeed from "@/component/Video";
+import GetVideos from "@/lib/getVideos";
+
+export default async function Home() {
+  // TODO: Fetch initial videos from Pexels and pass them to <VideoFeed />
+  // Suggested starter:
+  // const data = await getVideosByQuery("space", 1, 5);
+  // return <VideoFeed videoRes={data} />;
+
+  const data = await GetVideos("", "", 0, 0);
+
+  console.log(data[0].url);
+
+  return (
+    <main className="h-screen w-screen grid place-items-center">
+      <p className="text-lg">Workshop TODO: Implement app/page.tsx</p>
+      <VideoFeed url={data[0].url} />
+    </main>
+  );
+}
+```
+
+---
   
