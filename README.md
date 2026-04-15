@@ -157,6 +157,246 @@ return videos;
 
 We return only the array of videos, not the full API response.
 
+## What are we building?
+
+In this step, we are creating a **frontend video component** that displays videos and handles user interaction.
+
+This component:
+- renders a video using a URL
+- listens for user clicks
+- shows a play/pause animation overlay
+
+Think of this as the **UI layer that displays the videos fetched from our backend**.
+
+---
+
+## File Setup
+
+We are working in:
+
+VideoFeed.tsx  
+
+This file is responsible for:
+- displaying a video  
+- handling user interaction (clicks)  
+- showing UI feedback (play icon)  
+
+---
+
+## Step 1: Enable Client-Side Execution
+
+```ts
+"use client";
+```
+
+This tells Next.js that this component runs on the **frontend (browser)**.
+
+Why this matters:
+- allows use of React hooks like useState and useEffect  
+- enables interactivity (clicks, animations, etc.)  
+
+---
+
+## Step 2: Import Hooks and Types
+
+```ts
+import { VideoResponse } from "@/types/backend/types";
+import { useCallback, useEffect, useRef, useState } from "react";
+```
+
+What’s happening:
+
+- useState → manages component state  
+- useRef → references the video element directly  
+- useEffect / useCallback → imported but not used yet  
+- VideoResponse → imported but not used in this component  
+
+Note: Some imports are currently unused and can be cleaned up later.
+
+---
+
+## Step 3: Create the Component
+
+```ts
+export default function VideoFeed({ url }: { url: string }) {
+```
+
+This component takes in:
+
+- url → the video source to display  
+
+---
+
+## Step 4: Reference the Video Element
+
+```ts
+const videoRef = useRef<HTMLVideoElement>(null);
+```
+
+This allows us to:
+- directly access the video DOM element  
+- control playback (play/pause)  
+
+---
+
+## Step 5: Create State for Play/Pause UI
+
+```ts
+const [isPaused, setPaused] = useState<{
+  type: boolean,
+  id: number
+} | null>(null);
+```
+
+What this state does:
+
+- type → determines whether we show play or pause icon  
+- id → ensures animation re-renders (used as a key)  
+- null → no icon shown initially  
+
+---
+
+## Step 6: Handle Click Interaction
+
+```ts
+const togglePlay = (e: React.MouseEvent<HTMLDivElement>) => {
+  e.stopPropagation();
+
+  if (videoRef.current) {
+    if (videoRef.current.paused) {
+      setPaused({ type: false, id: Date.now() });
+    }
+  }
+};
+```
+
+What’s happening:
+
+- stops click from bubbling up  
+- checks if the video exists  
+- checks if the video is paused  
+- updates state to show the play icon  
+
+Note:
+- This currently does NOT actually play or pause the video  
+- It only updates the UI state  
+
+---
+
+## Step 7: Render the Video
+
+```tsx
+<video
+  ref={videoRef}
+  src={url}
+  className="z-0 absolute inset-0 h-full object-cover rounded-2xl"
+/>
+```
+
+What this does:
+
+- renders the video using the provided URL  
+- attaches the ref for control  
+- styles the video to:
+  - fill the container  
+  - maintain aspect ratio  
+  - have rounded corners  
+
+---
+
+## Step 8: Add Click Overlay
+
+```tsx
+<div
+  className="absolute inset-0 z-10 w-full h-full flex justify-center items-center"
+  onClick={togglePlay}
+>
+```
+
+Why this exists:
+
+- creates a clickable layer over the video  
+- captures user interaction  
+- centers UI elements (like play icon)  
+
+---
+
+## Step 9: Show Play/Pause Animation
+
+```tsx
+{isPaused && (
+  <img
+    key={isPaused.id}
+    src={isPaused.type ? "/pause.png" : "/play.png"}
+    className="w-[60px] h-[60px] animate-float-up pointer-events-none"
+    alt={isPaused.type ? "Pause" : "Play"}
+  />
+)}
+```
+
+What’s happening:
+
+- shows an icon when state is set  
+- switches between play and pause image  
+- uses key to trigger animation  
+- animation class creates a floating effect  
+
+---
+
+## Current Code
+
+```tsx
+"use client";
+import { VideoResponse } from "@/types/backend/types";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+export default function VideoFeed({url}: {url: string}) {
+  const videoRef= useRef<HTMLVideoElement>(null)
+
+  const [isPaused, setPaused]= useState<{
+    type: boolean,
+    id: number
+  } | null>(null);
+
+  const togglePlay = (e: React.MouseEvent<HTMLDivElement>)=> {
+    e.stopPropagation()
+    if (videoRef.current){
+      if (videoRef.current.paused){
+        setPaused({type: false, id: Date.now()})
+      }
+    }
+  }
+
+  return (
+    <>
+      <div className="h-full w-full overflow-hidden relative flex justify-center items-center">
+        <video
+          ref={videoRef}
+          src={url}
+          className="z-0 absolute inset-0 h-full object-cover rounded-2xl"
+        />
+
+        <div
+          className="absolute inset-0 z-10 w-full h-full flex justify-center items-center"
+          onClick={togglePlay}
+        >
+          {isPaused && (
+            <img
+              key={isPaused.id}
+              src={isPaused.type ? "/pause.png" : "/play.png"}
+              className="w-[60px] h-[60px] animate-float-up pointer-events-none"
+              alt={isPaused.type ? "Pause" : "Play"}
+            />
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+```
+
+---
+
 ---
 ## What are we building?
 
